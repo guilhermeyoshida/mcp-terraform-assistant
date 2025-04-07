@@ -1,5 +1,5 @@
 [project]
-name = "mcp-iac"
+name = "mcp-terraform-assistant"
 version = "0.1.0"
 description = "An MCP server for Terraform infrastructure as code management"
 readme = "README.md"

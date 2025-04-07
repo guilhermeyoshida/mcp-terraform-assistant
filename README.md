@@ -24,8 +24,8 @@ This MCP server provides an AI agent with tools to interact with Terraform for i
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/guilhermeyoshida/mcp-iac.git
-   cd mcp-iac
+   git clone https://github.com/guilhermeyoshida/mcp-terraform-assistant.git
+   cd mcp-terraform-assistant
    ```
 
 2. Install dependencies using uv:
