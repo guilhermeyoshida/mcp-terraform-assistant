@@ -24,8 +24,8 @@ This MCP server provides an AI agent with tools to interact with Terraform for i
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/guilhermeyoshida/mcp-terraform-assistant.git
-   cd mcp-terraform-assistant
+   git clone https://github.com/guilhermeyoshida/mcp-iac.git
+   cd mcp-iac
    ```
 
 2. Install dependencies using uv:
@@ -49,6 +49,31 @@ This MCP server provides an AI agent with tools to interact with Terraform for i
    ```
 
 4. The AI agent can now use the Terraform tools to help you manage your infrastructure.
+
+## Docker Support
+
+You can also run the MCP server using Docker:
+
+1. Build and start the container:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Connect to the server using an MCP client:
+   ```bash
+   mcp connect http://localhost:8000
+   ```
+
+3. To stop the container:
+   ```bash
+   docker-compose down
+   ```
+
+The Docker setup includes:
+- Python 3.10 environment
+- Terraform installation
+- All required dependencies
+- Volume mounting for the examples directory
 
 ## Available Tools
 
