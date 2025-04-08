@@ -37,7 +37,7 @@ def test_main_function():
     """Test the main function"""
     with patch('mcp.main.parse_args') as mock_parse_args, \
          patch('mcp.main.Config') as mock_config, \
-         patch('mcp.main.Server') as mock_server:
+         patch('mcp.main.FastMCP') as mock_fastmcp:
         
         # Setup mock arguments
         mock_args = MagicMock()
@@ -51,9 +51,9 @@ def test_main_function():
         mock_config_instance = MagicMock()
         mock_config.from_args.return_value = mock_config_instance
         
-        # Setup mock server
+        # Setup mock FastMCP
         mock_server_instance = MagicMock()
-        mock_server.return_value = mock_server_instance
+        mock_fastmcp.return_value = mock_server_instance
         
         # Call main function
         main()
@@ -61,5 +61,5 @@ def test_main_function():
         # Verify the mocks were called correctly
         mock_parse_args.assert_called_once()
         mock_config.from_args.assert_called_once_with(mock_args)
-        mock_server.assert_called_once_with(mock_config_instance)
+        mock_fastmcp.assert_called_once_with("terraform-assistant")
         mock_server_instance.start.assert_called_once() 

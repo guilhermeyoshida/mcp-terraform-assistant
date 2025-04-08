@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 
 from .config import Config
-from .server import Server
+from .server import FastMCP
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -18,5 +18,9 @@ def main() -> None:
     """Main entry point for the MCP server."""
     args = parse_args()
     config = Config.from_args(args)
-    server = Server(config)
+    
+    # Initialize FastMCP server
+    server = FastMCP("terraform-assistant")
+    
+    # Start the server
     server.start() 
