@@ -8,6 +8,15 @@
                 "run",
                 "main.py"
             ]
+        },
+        "terraform-assistant-docker": {
+            "command": "docker",
+            "args": [
+                "exec",
+                "mcp-iac-mcp-server-1",
+                "python",
+                "main.py"
+            ]
         }
     }
 }
