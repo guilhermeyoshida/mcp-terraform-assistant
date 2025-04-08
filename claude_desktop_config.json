@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "terraform-assistant": {
+            "command": "/Users/maker/.local/bin/uv",
+            "args": [
+                "--directory",
+                "/Users/maker/mcp-iac",
+                "run",
+                "main.py"
+            ]
+        }
+    }
+}

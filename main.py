@@ -1,7 +1,16 @@
 import subprocess
+import sys
+import os
 from typing import List, Dict, Any
 
 from mcp.server.fastmcp import FastMCP
+
+# Print debug information
+print("Starting Terraform Assistant MCP server...", file=sys.stderr)
+print(f"Python version: {sys.version}", file=sys.stderr)
+print(f"Python executable: {sys.executable}", file=sys.stderr)
+print(f"Current working directory: {os.getcwd()}", file=sys.stderr)
+print(f"PATH: {os.environ.get('PATH', '')}", file=sys.stderr)
 
 # Initialize FastMCP server
 mcp = FastMCP("terraform-assistant")
@@ -231,5 +240,9 @@ async def terraform_workspace_select(working_dir: str, name: str) -> str:
 
 if __name__ == "__main__":
     # Initialize and run the server
-    print("Starting Terraform Assistant MCP server...")
-    mcp.run(transport='stdio')
+    print("Starting Terraform Assistant MCP server...", file=sys.stderr)
+    try:
+        mcp.run(transport='stdio')
+    except Exception as e:
+        print(f"Error running MCP server: {e}", file=sys.stderr)
+        sys.exit(1)
