@@ -1,14 +1,13 @@
-version: '3'
+version: '3.8'
 
 services:
-  mcp-terraform-assistant:
+  mcp-server:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     volumes:
-      - ./examples:/app/examples
+      - ./terraform:/app/terraform
     environment:
       - PYTHONUNBUFFERED=1
-    restart: unless-stopped 
+    stdin_open: true
+    tty: true 

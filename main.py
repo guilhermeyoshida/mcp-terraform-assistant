@@ -1,179 +1,22 @@
 import subprocess
-from typing import List
+from typing import List, Dict, Any
 
-from mcp.server.fastmcp import FastMCP, Tool, ToolCall, ToolCallStatus
+from mcp.server.fastmcp import FastMCP
+
+# Initialize FastMCP server
+mcp = FastMCP("terraform-assistant")
 
 # Define the tools for Terraform operations
-def get_terraform_tools() -> List[Tool]:
-    return [
-        Tool(
-            name="terraform_init",
-            description="Initialize a Terraform working directory",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "backend_config": {
-                        "type": "object",
-                        "description": "Backend configuration for Terraform",
-                        "additionalProperties": True,
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_plan",
-            description="Generate and show an execution plan for Terraform",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "var_file": {
-                        "type": "string",
-                        "description": "Path to a variables file",
-                    },
-                    "var": {
-                        "type": "object",
-                        "description": "Variables to set for the Terraform plan",
-                        "additionalProperties": True,
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_apply",
-            description="Apply the changes required to reach the desired state of the configuration",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "auto_approve": {
-                        "type": "boolean",
-                        "description": "Skip interactive approval of plan before applying",
-                        "default": False,
-                    },
-                    "var_file": {
-                        "type": "string",
-                        "description": "Path to a variables file",
-                    },
-                    "var": {
-                        "type": "object",
-                        "description": "Variables to set for the Terraform apply",
-                        "additionalProperties": True,
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_destroy",
-            description="Destroy the infrastructure managed by Terraform",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "auto_approve": {
-                        "type": "boolean",
-                        "description": "Skip interactive approval of plan before destroying",
-                        "default": False,
-                    },
-                    "var_file": {
-                        "type": "string",
-                        "description": "Path to a variables file",
-                    },
-                    "var": {
-                        "type": "object",
-                        "description": "Variables to set for the Terraform destroy",
-                        "additionalProperties": True,
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_validate",
-            description="Validate the syntax and internal consistency of Terraform files",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_show",
-            description="Show the current state or a saved plan",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "plan_file": {
-                        "type": "string",
-                        "description": "Path to a saved plan file",
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_workspace_list",
-            description="List Terraform workspaces",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                },
-                "required": ["working_dir"],
-            },
-        ),
-        Tool(
-            name="terraform_workspace_select",
-            description="Select a Terraform workspace",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "working_dir": {
-                        "type": "string",
-                        "description": "Path to the Terraform working directory",
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "Name of the workspace to select",
-                    },
-                },
-                "required": ["working_dir", "name"],
-            },
-        ),
-    ]
-
-# Implement the tool handlers
-async def handle_terraform_init(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    backend_config = tool_call.parameters.get("backend_config", {})
+@mcp.tool()
+async def terraform_init(working_dir: str, backend_config: Dict[str, Any] = None) -> str:
+    """Initialize a Terraform working directory.
+    
+    Args:
+        working_dir: Path to the Terraform working directory
+        backend_config: Backend configuration for Terraform
+    """
+    if backend_config is None:
+        backend_config = {}
     
     cmd = ["terraform", "init"]
     
@@ -189,20 +32,21 @@ async def handle_terraform_init(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_plan(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    var_file = tool_call.parameters.get("var_file")
-    var = tool_call.parameters.get("var", {})
+@mcp.tool()
+async def terraform_plan(working_dir: str, var_file: str = None, var: Dict[str, Any] = None) -> str:
+    """Generate and show an execution plan for Terraform.
+    
+    Args:
+        working_dir: Path to the Terraform working directory
+        var_file: Path to a variables file
+        var: Variables to set for the Terraform plan
+    """
+    if var is None:
+        var = {}
     
     cmd = ["terraform", "plan"]
     
@@ -222,21 +66,22 @@ async def handle_terraform_plan(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_apply(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    auto_approve = tool_call.parameters.get("auto_approve", False)
-    var_file = tool_call.parameters.get("var_file")
-    var = tool_call.parameters.get("var", {})
+@mcp.tool()
+async def terraform_apply(working_dir: str, auto_approve: bool = False, var_file: str = None, var: Dict[str, Any] = None) -> str:
+    """Apply the changes required to reach the desired state of the configuration.
+    
+    Args:
+        working_dir: Path to the Terraform working directory
+        auto_approve: Skip interactive approval of plan before applying
+        var_file: Path to a variables file
+        var: Variables to set for the Terraform apply
+    """
+    if var is None:
+        var = {}
     
     cmd = ["terraform", "apply"]
     
@@ -259,21 +104,22 @@ async def handle_terraform_apply(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_destroy(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    auto_approve = tool_call.parameters.get("auto_approve", False)
-    var_file = tool_call.parameters.get("var_file")
-    var = tool_call.parameters.get("var", {})
+@mcp.tool()
+async def terraform_destroy(working_dir: str, auto_approve: bool = False, var_file: str = None, var: Dict[str, Any] = None) -> str:
+    """Destroy the infrastructure managed by Terraform.
+    
+    Args:
+        working_dir: Path to the Terraform working directory
+        auto_approve: Skip interactive approval of plan before destroying
+        var_file: Path to a variables file
+        var: Variables to set for the Terraform destroy
+    """
+    if var is None:
+        var = {}
     
     cmd = ["terraform", "destroy"]
     
@@ -296,19 +142,17 @@ async def handle_terraform_destroy(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_validate(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
+@mcp.tool()
+async def terraform_validate(working_dir: str) -> str:
+    """Validate the syntax and internal consistency of Terraform files.
     
+    Args:
+        working_dir: Path to the Terraform working directory
+    """
     try:
         result = subprocess.run(
             ["terraform", "validate"],
@@ -317,20 +161,18 @@ async def handle_terraform_validate(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_show(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    plan_file = tool_call.parameters.get("plan_file")
+@mcp.tool()
+async def terraform_show(working_dir: str, plan_file: str = None) -> str:
+    """Show the current state or a saved plan.
     
+    Args:
+        working_dir: Path to the Terraform working directory
+        plan_file: Path to a saved plan file
+    """
     cmd = ["terraform", "show"]
     
     if plan_file:
@@ -344,19 +186,17 @@ async def handle_terraform_show(tool_call: ToolCall) -> ToolCallStatus:
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_workspace_list(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
+@mcp.tool()
+async def terraform_workspace_list(working_dir: str) -> str:
+    """List Terraform workspaces.
     
+    Args:
+        working_dir: Path to the Terraform working directory
+    """
     try:
         result = subprocess.run(
             ["terraform", "workspace", "list"],
@@ -365,20 +205,18 @@ async def handle_terraform_workspace_list(tool_call: ToolCall) -> ToolCallStatus
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
+        return f"Error: {e.stderr}"
 
-async def handle_terraform_workspace_select(tool_call: ToolCall) -> ToolCallStatus:
-    working_dir = tool_call.parameters.get("working_dir")
-    name = tool_call.parameters.get("name")
+@mcp.tool()
+async def terraform_workspace_select(working_dir: str, name: str) -> str:
+    """Select a Terraform workspace.
     
+    Args:
+        working_dir: Path to the Terraform working directory
+        name: Name of the workspace to select
+    """
     try:
         result = subprocess.run(
             ["terraform", "workspace", "select", name],
@@ -387,46 +225,11 @@ async def handle_terraform_workspace_select(tool_call: ToolCall) -> ToolCallStat
             text=True,
             check=True,
         )
-        return ToolCallStatus(
-            status="completed",
-            output=result.stdout,
-        )
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        return ToolCallStatus(
-            status="failed",
-            output=f"Error: {e.stderr}",
-        )
-
-# Create the MCP server
-def create_mcp_server() -> FastMCP:
-    tools = get_terraform_tools()
-    
-    # Create the MCP server
-    mcp = FastMCP(
-        name="terraform-iac-assistant",
-        description="An AI assistant for managing infrastructure as code with Terraform",
-        tools=tools,
-    )
-    
-    # Register tool handlers
-    mcp.register_tool_handler("terraform_init", handle_terraform_init)
-    mcp.register_tool_handler("terraform_plan", handle_terraform_plan)
-    mcp.register_tool_handler("terraform_apply", handle_terraform_apply)
-    mcp.register_tool_handler("terraform_destroy", handle_terraform_destroy)
-    mcp.register_tool_handler("terraform_validate", handle_terraform_validate)
-    mcp.register_tool_handler("terraform_show", handle_terraform_show)
-    mcp.register_tool_handler("terraform_workspace_list", handle_terraform_workspace_list)
-    mcp.register_tool_handler("terraform_workspace_select", handle_terraform_workspace_select)
-    
-    return mcp
-
-def main():
-    # Create the MCP server
-    mcp = create_mcp_server()
-    
-    # Start the server
-    print("Starting Terraform IAC Assistant MCP server...")
-    mcp.run(host="0.0.0.0", port=8000)
+        return f"Error: {e.stderr}"
 
 if __name__ == "__main__":
-    main()
+    # Initialize and run the server
+    print("Starting Terraform Assistant MCP server...")
+    mcp.run(transport='stdio')

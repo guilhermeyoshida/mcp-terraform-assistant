@@ -1,79 +1,121 @@
-# MCP Terraform Assistant
+# MCP Infrastructure as Code Assistant
 
-An MCP server for managing infrastructure as code using Terraform.
+An MCP server for managing infrastructure as code with Terraform.
 
 ## Features
-
-This MCP server provides an AI agent with tools to interact with Terraform for infrastructure as code management. The agent can:
 
 - Initialize Terraform working directories
 - Generate and show execution plans
 - Apply changes to infrastructure
-- Destroy infrastructure resources
+- Destroy infrastructure
 - Validate Terraform configurations
 - Show current state or saved plans
 - Manage Terraform workspaces
 
 ## Prerequisites
 
-- Python 3.10 or higher
-- Terraform installed on your system
-- [uv](https://github.com/astral-sh/uv) for dependency management
+- Python 3.8 or higher
+- Terraform 1.5.7 or higher
+- Docker and Docker Compose (optional)
 
 ## Installation
 
-1. Clone this repository:
+### Local Installation
+
+1. Clone the repository:
    ```bash
-   git clone https://github.com/guilhermeyoshida/mcp-terraform-assistant.git
-   cd mcp-terraform-assistant
+   git clone https://github.com/yourusername/mcp-iac.git
+   cd mcp-iac
    ```
 
 2. Install dependencies using uv:
    ```bash
-   uv venv
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    uv pip install -e .
    ```
 
+### Docker Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/mcp-iac.git
+   cd mcp-iac
+   ```
+
+2. Build and run the Docker container:
+   ```bash
+   docker-compose up -d
+   ```
+
 ## Usage
+
+### Local Usage
 
 1. Start the MCP server:
    ```bash
    python main.py
    ```
 
-2. The server will start on `http://0.0.0.0:8000`.
-
-3. Connect to the server using an MCP client:
+2. Use the MCP CLI to interact with the server:
    ```bash
-   mcp connect http://localhost:8000
+   mcp terraform_init --working-dir ./terraform
+   mcp terraform_plan --working-dir ./terraform
+   mcp terraform_apply --working-dir ./terraform --auto-approve
    ```
 
-4. The AI agent can now use the Terraform tools to help you manage your infrastructure.
+### Docker Usage
 
-## Docker Support
-
-You can also run the MCP server using Docker:
-
-1. Build and start the container:
+1. Start the MCP server:
    ```bash
    docker-compose up -d
    ```
 
-2. Connect to the server using an MCP client:
+2. Use the MCP CLI to interact with the server:
    ```bash
-   mcp connect http://localhost:8000
+   mcp terraform_init --working-dir ./terraform
+   mcp terraform_plan --working-dir ./terraform
+   mcp terraform_apply --working-dir ./terraform --auto-approve
    ```
 
-3. To stop the container:
-   ```bash
-   docker-compose down
-   ```
+## Example Terraform Configuration
 
-The Docker setup includes:
-- Python 3.10 environment
-- Terraform installation
-- All required dependencies
-- Volume mounting for the examples directory
+The repository includes an example Terraform configuration that creates an EC2 instance in AWS:
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_instance" "example" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+  tags = {
+    Name = var.instance_name
+  }
+}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Available Tools
 
